@@ -1,0 +1,28 @@
+:root {
+  /* Neon Colors */
+  --neon-primary: #0ff;
+  --neon-secondary: #f0f;
+  --neon-accent: #ff0;
+  --neon-error: #f00;
+  --neon-success: #0f0;
+  
+  /* Background Colors */
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #151520;
+  --bg-tertiary: #1a1a25;
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(45deg, var(--neon-primary), var(--neon-secondary));
+  --gradient-hover: linear-gradient(45deg, var(--neon-secondary), var(--neon-primary));
+  
+  /* Shadows */
+  --neon-shadow-primary: 0 0 10px var(--neon-primary),
+                        0 0 20px var(--neon-primary),
+                        0 0 30px var(--neon-primary);
+  --neon-shadow-secondary: 0 0 10px var(--neon-secondary),
+                          0 0 20px var(--neon-secondary),
+                          0 0 30px var(--neon-secondary);
+  
+  /* Animations */
+  --transition-speed: 0.3s;
+}
