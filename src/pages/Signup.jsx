@@ -3,7 +3,20 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Input from '../components/forms/Input';
 
+import { useNavigate } from 'react-router-dom';
+
+import {useDispatch,useSelector} from 'react-redux'
+import {setAuthData,removeAuthData} from '../store/slices/auth/authSlice'
+
+
+import { signup } from '../utils/auth';
+
 export default function Signup() {
+  const dispatch = useDispatch()
+  const authData = useSelector(state => state.auth)
+
+  const navigate = useNavigate()
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     email: '',
@@ -71,11 +84,24 @@ export default function Signup() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateStep(step)) {
-      // Handle form submission
-      console.log('Form submitted:', formData);
+      const data = await signup(formData.email, formData.username, formData.password);
+      if(!data.id){
+        console.log("wrong email or password")
+        setIsLoading(false);
+        setErrors(data);
+        return;
+      }
+      dispatch(
+        setAuthData({
+              user_id: data.user_id,
+              user_name: data.user_name,
+              token: data.token,
+        }))
+      setIsLoading(false);
+      navigate('/chat')
     }
   };
 

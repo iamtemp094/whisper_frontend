@@ -34,15 +34,17 @@ export default function Login() {
     
     if (Object.keys(newErrors).length === 0) {
       const data = await login(formData.email, formData.password);
-      if(data=="missing user"){
+      if(!data.id){
         console.log("wrong email or password")
+        setIsLoading(false);
+        setErrors(data);
+        return;
       }
       dispatch(
         setAuthData({
               user_id: data.user_id,
               user_name: data.user_name,
               token: data.token,
-              isLoggedIn: true,
         }))
       setIsLoading(false);
       try{

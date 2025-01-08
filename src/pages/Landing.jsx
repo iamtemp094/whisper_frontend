@@ -2,7 +2,20 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import ParticleBackground from '../components/ParticleBackground';
 
-export default function Landing() {
+import {useDispatch,useSelector} from 'react-redux'
+import {setAuthData,removeAuthData} from '../store/slices/auth/authSlice'
+import { verify_token } from '../utils/auth';
+
+
+export default  function Landing() {
+  const dispatch = useDispatch()
+  const authData = useSelector(state => state.auth)
+  // verify_token().then(data=>{
+  //   console.log(data)
+
+
+  // })
+
   return (
     <div className="min-h-screen bg-cyber-dark text-white relative overflow-hidden">
       <ParticleBackground />
@@ -39,7 +52,7 @@ export default function Landing() {
         <div className="text-center">
           <Link
             to="/signup"
-            className="inline-block px-8 py-4 bg-gradient-to-r from-neon-primary to-neon-secondary rounded-full text-black font-bold hover:scale-105 transition-transform duration-300 animate-pulse"
+            className="inline-block px-8 py-4 bg-gradient-to-r from-neon-primary to-neon-secondary rounded-full text-black font-bold hover:scale-105"
           >
             Get Started
           </Link>
