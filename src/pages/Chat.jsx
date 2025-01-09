@@ -8,6 +8,7 @@ import { sendMessage } from '../utils/chat';
 
 import {useDispatch,useSelector} from 'react-redux'
 import {setAuthData,removeAuthData} from '../store/slices/auth/authSlice'
+import {connectSocket} from '../store/slices/socket/socketSlice'
 
 import { getChatIds,getMessages } from '../utils/chat';
 
@@ -20,6 +21,8 @@ export default function Chat() {
   const [users,setUsers] = useState([])
   const dispatch = useDispatch()
   const authData = useSelector(state => state.auth)
+  const socket = useSelector(state => state.socket)
+  
   const currentUser ={
     id: authData.user_id,
     name: authData.user_name,
@@ -55,11 +58,19 @@ export default function Chat() {
       }
       };
       fetchUsers();
+      if(authData.user_id){
+        dispatch(connectSocket(
+          {
+            user_id : authData.user_id,
+          }
+        ))
+      }
     }, []);
 
-  const handleSendMessage = (text,activeUserId,users) => {
+  const handleSendMessage = async (text,activeUserId,users) => {
+    const data= await sendMessage(currentUser.id,activeUserId,text,authData.token)
     const newMessage = {
-      id: activeUserId,
+      id: data.id,
       senderId: currentUser.id,
       text,
       timestamp: new Date().toISOString(),
@@ -69,9 +80,35 @@ export default function Chat() {
     user.messages.push(newMessage)
     newUsers.push(user)
     setUsers(newUsers)
-    sendMessage(currentUser.id,activeUserId,text,authData.token)
-  };
+    try {
+      socket.socket.send(JSON.stringify({type:"message",message:text,user_id:currentUser.id,receiver_id:activeUserId,user_name:currentUser.name,message_id:data.id}));
+    } catch (error) {
 
+    }
+    
+  };
+  if(socket.socket){
+    socket.socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if(message.type === "message"){
+      try {
+        const newMessage = {
+          id: message.message_id,
+          senderId: message.user_id,
+          text: message.message,
+          timestamp: new Date().toISOString(),
+        }
+        const user = users.find((user) => user.id === Number(message.user_id));
+        const newUsers = users.filter(user => user.id != message.user_id)
+        user.messages.push(newMessage)
+        newUsers.push(user)
+        setUsers(newUsers)
+      } catch (error) {
+        console.error(error);
+      }
+      }
+    }
+  }
   return (
     <div className="min-h-screen bg-cyber-dark flex">
       <Sidebar
@@ -83,16 +120,6 @@ export default function Chat() {
       
       <div className="flex-1 flex flex-col">
         <ChatHeader activeUserId={activeUserId} users={users} />
-        
-        {/* <div className="flex-1 overflow-y-auto p-4">
-          {messages.map((message) => (
-            <ChatMessage
-              key={message.id}
-              message={message}
-              isOwn={message.senderId === currentUser.id}
-            />
-          ))}
-        </div> */}
         <ChatMessageDisplay messages={messages} currentUser={currentUser} activeUserId={activeUserId} users={users}/>
         {activeUserId && <ChatInput onSendMessage={handleSendMessage} users={users} activeUserId={activeUserId}/>}
       </div>
