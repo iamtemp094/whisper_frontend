@@ -1,98 +1,90 @@
-import { useState } from 'react';
+import { act, useEffect, useState } from 'react';
 import ChatHeader from '../components/chat/ChatHeader';
 import ChatMessage from '../components/chat/ChatMessage';
 import ChatInput from '../components/chat/ChatInput';
 import Sidebar from '../components/chat/Sidebar';
+import ChatMessageDisplay from '../components/chat/ChatMessageDisplay';
+import { sendMessage } from '../utils/chat';
 
-// Dummy data
-const currentUser = {
-  id: '1',
-  name: 'CyberUser',
-};
+import {useDispatch,useSelector} from 'react-redux'
+import {setAuthData,removeAuthData} from '../store/slices/auth/authSlice'
 
-const dummyUsers = [
-  {
-    id: '2',
-    name: 'NeonRider',
-    status: 'Ready for the future',
-    online: true,
-  },
-  {
-    id: '3',
-    name: 'PixelPunk',
-    status: 'Hacking the mainframe',
-    online: true,
-  },
-  {
-    id: '4',
-    name: 'SynthWave',
-    status: 'In the digital void',
-    online: false,
-  },
-  {
-    id: '5',
-    name: 'ByteRunner',
-    status: 'Exploring cyberspace',
-    online: true,
-  },
-];
+import { getChatIds,getMessages } from '../utils/chat';
 
-const initialMessages = [
-  {
-    id: 1,
-    senderId: '2',
-    text: 'Hey there! Welcome to CyberChat 🌐',
-    timestamp: new Date(Date.now() - 360000).toISOString(),
-  },
-  {
-    id: 2,
-    senderId: '1',
-    text: 'Thanks! Love the neon aesthetic here ✨',
-    timestamp: new Date(Date.now() - 300000).toISOString(),
-  },
-  {
-    id: 3,
-    senderId: '2',
-    text: 'The future of communication is here. How are you finding it so far?',
-    timestamp: new Date(Date.now() - 240000).toISOString(),
-  },
-  {
-    id: 4,
-    senderId: '1',
-    text: 'It\'s amazing! The UI is so smooth and responsive.',
-    timestamp: new Date(Date.now() - 180000).toISOString(),
-  },
-];
+
+
 
 export default function Chat() {
-  const [messages, setMessages] = useState(initialMessages);
-  const [activeUserId, setActiveUserId] = useState('2');
+  const [messages, setMessages] = useState([]);
+  const [activeUserId, setActiveUserId] = useState();
+  const [users,setUsers] = useState([])
+  const dispatch = useDispatch()
+  const authData = useSelector(state => state.auth)
+  const currentUser ={
+    id: authData.user_id,
+    name: authData.user_name,
+  }
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (authData.user_id) {
+        try {
+          const chatIds = await getChatIds(authData.user_id, authData.token);
+          const userPromises = chatIds.map(async (chatId) => {
+            const data = await getMessages(authData.user_id, chatId, authData.token);
+            const newmessages = data.messages.map(message=>{
+              return {
+                id: message.id,
+                senderId: message.sender,
+                text: message.message_content,
+                timestamp: message.timestamp,
+              }
+            })
+            return {
+              id: chatId,
+              name: data.receiver_name,
+              status: "Do Good Or Do Nothing",
+              online: true,
+              messages:newmessages
+            };
+          });
+          const userData = await Promise.all(userPromises);
+          setUsers(userData); 
+        } catch (error) {
+          console.error("Error fetching users:", error);
+        }
+      }
+      };
+      fetchUsers();
+    }, []);
 
-  const handleSendMessage = (text) => {
+  const handleSendMessage = (text,activeUserId,users) => {
     const newMessage = {
-      id: messages.length + 1,
+      id: activeUserId,
       senderId: currentUser.id,
       text,
       timestamp: new Date().toISOString(),
-    };
-    setMessages([...messages, newMessage]);
+    };  
+    const user =  users.find(user => user.id == activeUserId)
+    const newUsers = users.filter(user => user.id != activeUserId)
+    user.messages.push(newMessage)
+    newUsers.push(user)
+    setUsers(newUsers)
+    sendMessage(currentUser.id,activeUserId,text,authData.token)
   };
-
-  const activeUser = dummyUsers.find(user => user.id === activeUserId);
 
   return (
     <div className="min-h-screen bg-cyber-dark flex">
       <Sidebar
         currentUser={currentUser}
-        users={dummyUsers}
+        users={users}
         activeUserId={activeUserId}
         onUserSelect={(user) => setActiveUserId(user.id)}
       />
       
       <div className="flex-1 flex flex-col">
-        <ChatHeader user={activeUser} />
+        <ChatHeader activeUserId={activeUserId} users={users} />
         
-        <div className="flex-1 overflow-y-auto p-4">
+        {/* <div className="flex-1 overflow-y-auto p-4">
           {messages.map((message) => (
             <ChatMessage
               key={message.id}
@@ -100,9 +92,9 @@ export default function Chat() {
               isOwn={message.senderId === currentUser.id}
             />
           ))}
-        </div>
-
-        <ChatInput onSendMessage={handleSendMessage} />
+        </div> */}
+        <ChatMessageDisplay messages={messages} currentUser={currentUser} activeUserId={activeUserId} users={users}/>
+        {activeUserId && <ChatInput onSendMessage={handleSendMessage} users={users} activeUserId={activeUserId}/>}
       </div>
     </div>
   );

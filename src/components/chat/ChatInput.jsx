@@ -1,13 +1,18 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
-export default function ChatInput({ onSendMessage }) {
+export default function ChatInput({ onSendMessage,activeUserId,users }) {
   const [message, setMessage] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (message.trim()) {
-      onSendMessage(message);
+      try {
+        onSendMessage(message,activeUserId,users);
+      } catch (error) {
+        console.log(error);
+      }
+
       setMessage('');
     }
   };

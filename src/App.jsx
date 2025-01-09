@@ -9,6 +9,9 @@ import { useEffect,useState } from 'react';
 
 import {useDispatch,useSelector} from 'react-redux'
 import {setAuthData,removeAuthData} from './store/slices/auth/authSlice'
+
+import { getChatIds,getMessages } from './utils/chat';
+
 function App() {
   const dispatch = useDispatch()
   const authData = useSelector(state => state.auth)
@@ -22,8 +25,9 @@ function App() {
           token: data.token,
         })
       )
-  }
+    }
   })
+
   return (
     <Router>
       <Navbar />

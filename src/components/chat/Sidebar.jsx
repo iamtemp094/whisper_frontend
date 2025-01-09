@@ -5,7 +5,6 @@ import UserAvatar from './UserAvatar';
 export default function Sidebar({ currentUser, users, activeUserId, onUserSelect }) {
   return (
     <div className="w-80 border-r border-gray-800 flex flex-col">
-      {/* Current User Profile */}
       <div className="p-4 border-b border-gray-800">
         <div className="flex items-center gap-3">
           <UserAvatar name={currentUser.name} size="lg" />
@@ -22,7 +21,6 @@ export default function Sidebar({ currentUser, users, activeUserId, onUserSelect
         </div>
       </div>
 
-      {/* Search Bar */}
       <div className="p-4 border-b border-gray-800">
         <input
           type="text"
@@ -32,7 +30,6 @@ export default function Sidebar({ currentUser, users, activeUserId, onUserSelect
         />
       </div>
 
-      {/* Users List */}
       <div className="flex-1 overflow-y-auto p-2">
         {users.map(user => (
           <UserListItem

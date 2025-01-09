@@ -1,6 +1,10 @@
 import { motion } from 'framer-motion';
 
-export default function ChatHeader({ user }) {
+export default function ChatHeader({ users,activeUserId }) {
+  if(users.length===0 || activeUserId=== undefined){
+      return <div>No chat slected</div>
+  }
+  const user = users.find(user => user.id == activeUserId);
   return (
     <div className="border-b border-gray-800 p-4">
       <div className="flex items-center gap-3">

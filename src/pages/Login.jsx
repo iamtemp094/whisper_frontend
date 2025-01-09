@@ -47,12 +47,7 @@ export default function Login() {
               token: data.token,
         }))
       setIsLoading(false);
-      try{
-        navigate('/chat')
-      }
-      catch(error){
-        console.log(error);
-      }
+      
 
     } else {
       setIsLoading(false);
