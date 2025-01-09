@@ -17,7 +17,10 @@ export default function ChatMessage({ message, isOwn }) {
       >
         <p className="text-sm text-gray-300">{message.text}</p>
         <span className="text-xs text-gray-500 mt-1 block">
-          {new Date(message.timestamp).toLocaleTimeString()}
+        {new Date(message.timestamp).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
         </span>
       </div>
     </motion.div>
